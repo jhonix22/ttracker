@@ -12,10 +12,18 @@ class PageController extends Controller
 
             $pages = DB::select('select * from pages where name = ?', [$page]);
             if(sizeof($pages) > 0){
-                $tickets = DB::select('select * from tickets where page_id = ?', [$pages[0]['pageid']]);             
-                return view('page',['page' => json_encode($pages)]);
+                $tickets = DB::table('tickets')
+                            ->select('*')
+                            ->where('page_id','=',$pages[0]->pageid)
+                            ->orderby('date_added','desc')
+                            ->get();
+
+                return view('page',['page' => $pages ,'tickets' => $tickets]);
             }else{
-                return view('page',['page' => $page]);
+                //insert new page
+                $ins = DB::insert('insert into pages (name) values ("'.$page.'")');
+                if($ins)
+                    return view('page',['page' => 'page']);
             }
     }
 }
